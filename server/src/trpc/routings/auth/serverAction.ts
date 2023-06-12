@@ -101,7 +101,7 @@ export const authServerAction = router( {
 
 			let arkQueryPort = 27015;
 			let arkPort = 7778;
-			let arkRCONPort = 29020;
+			let arkRCONPort = 32330;
 
 			while( queryPorts.includes( arkQueryPort ) ) {
 				arkQueryPort++;
