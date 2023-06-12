@@ -10,6 +10,7 @@ service ssh status
 steamcmd +quit
 
 # installation as steam
-su -c '/home/steam/steamcmd +quit' steam
+su -c 'ln -sf /usr/games/steamcmd /home/steam/Steam/steamcmd' steam
+su -c '/home/steam/Steam/steamcmd +quit' steam
 
 exec "$@"

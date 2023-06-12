@@ -45,7 +45,6 @@ RUN apt-get update -qy && \
   echo steam steam/license note '' | debconf-set-selections && \
   apt-get install -q -y --no-install-recommends steamcmd
 RUN ln -sf /usr/games/steamcmd /usr/bin/steamcmd
-RUN ln -sf /usr/games/steamcmd /home/steam/steamcmd
 
 #############
 ### Arkmanager aka ARK Server Tools installation
