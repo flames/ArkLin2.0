@@ -21,20 +21,9 @@ COPY sshd_config /etc/ssh/sshd_config
 RUN useradd -m -d /home/${SSH_STEAM_USER} -G ssh ${SSH_STEAM_USER} -s /bin/bash
 RUN echo ${SSH_STEAM_USER}:${SSH_STEAM_PASS} | chpasswd
 RUN echo 'PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin"' >> /home/${SSH_STEAM_USER}/.profile
-RUN echo "${SSH_STEAM_USER} ALL=NOPASSWD:/bin/rm" >> /etc/sudoers
-RUN echo "${SSH_STEAM_USER} ALL=NOPASSWD:/bin/mkdir" >> /etc/sudoers
-RUN echo "${SSH_STEAM_USER} ALL=NOPASSWD:/bin/chown" >> /etc/sudoers
-RUN echo "${SSH_STEAM_USER} ALL=NOPASSWD:/usr/sbin/useradd" >> /etc/sudoers
-RUN echo "${SSH_STEAM_USER} ALL=NOPASSWD:/usr/sbin/deluser" >> /etc/sudoers
-RUN echo "${SSH_STEAM_USER} ALL=NOPASSWD:/usr/sbin/chpasswd" >> /etc/sudoers
-
-#############
-### Option 1: Install steamcmd from akamai/valve (unfinished! use Option 2 yet)
-#RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" --create-dirs --output /usr/games/steamcmd/steamcmd_linux.tar.gz
-#RUN tar zxvf /usr/games/steamcmd/steamcmd_linux.tar.gz --directory /usr/games/steamcmd/
-#RUN chmod +x /usr/games/steamcmd/linux32/steamcmd
-#RUN ln -sf /usr/games/steamcmd/linux32/steamcmd /usr/bin/steamcmd
-#RUN ln -sf /usr/games/steamcmd/linux32/steamcmd /home/steam/steamcmd
+#we do all executables here w/o password, since the container it self is running unprivileged while ct root _will be_ bound to host user uid 1000 via env
+RUN echo "${SSH_STEAM_USER} ALL=NOPASSWD:/bin/*" >> /etc/sudoers
+RUN echo "${SSH_STEAM_USER} ALL=NOPASSWD:/usr/sbin/*" >> /etc/sudoers
 
 #############
 ### Option 2: Install steamcmd from repo https://developer.valvesoftware.com/wiki/SteamCMD#Package_From_Repositories
@@ -44,7 +33,7 @@ RUN apt-get update -qy && \
   echo steam steam/question select "I AGREE" | debconf-set-selections && \
   echo steam steam/license note '' | debconf-set-selections && \
   apt-get install -q -y --no-install-recommends steamcmd
-RUN ln -sf /usr/games/steamcmd /usr/bin/steamcmd
+RUN ln -sfv /usr/games/steamcmd /usr/bin/steamcmd
 
 #############
 ### Arkmanager aka ARK Server Tools installation

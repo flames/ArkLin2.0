@@ -2,8 +2,8 @@ version: "3.9"
 
 services:
   kadmin-arklin2:
-    container_name: arklin2-arklin2
-    #user: "${DOCKER_UID}:${DOCKER_GID}"
+    user: "1000:1000"
+    container_name: kadmin-arklin2
     depends_on:
       - mongodb
       - arkmanager
@@ -18,7 +18,6 @@ services:
       - MONGODB_USER=kadmin
       - MONGODB_PASSWD=arklin2
       - MONGODB_DATABASE=arklin2db
-    hostname: arklin2-arklin2
     ports:
       - target: 28100
         published: 28100
@@ -41,23 +40,9 @@ services:
     networks:
       - arklin2_network
 
-  mongodb:
-    container_name: arklin2-mongodb
-    #user: "${DOCKER_UID}:${DOCKER_GID}"
-    image: mongo
-    volumes:
-      - '../mount/mongodb:/data/db'
-    environment:
-      MONGO_INITDB_DATABASE: arklin2db
-      MONGO_INITDB_ROOT_USERNAME: kadmin
-      MONGO_INITDB_ROOT_PASSWORD: arklin2
-    hostname: arklin2-mongodb
-    networks:
-      - arklin2_network
-
   arkmanager:
+    #user: "1000:1000"
     container_name: arklin2-arkmanager
-    #user: "${DOCKER_UID}:${DOCKER_GID}"
     build:
       context: ./arkmanager
       args:
@@ -65,42 +50,58 @@ services:
         SSH_ROOT_PASS: arklin2
         SSH_STEAM_USER: steam
         SSH_STEAM_PASS: arklin2
-    hostname: arklin2-arkmanager
+        #USER_ID: 1000
+        #GROUP_ID: 1000
     volumes:
       - ../mount/arkmanager/:/etc/arkmanager/
-      - ../mount/Server/:/mount/Server/
-      - ../mount/Logs/:/mount/Logs/
-      - ../mount/Backups/:/mount/Backups/
+      - ../mount/Backups/:/home/steam/KAdmin/mount/Backups/
+      - ../mount/Server/:/home/steam/KAdmin/mount/Server/
+      - ../mount/Logs/:/home/steam/KAdmin/mount/Logs/
       - ../mount/steamcmd/:/home/steam/Steam/
     ports:
-      # SSH port temporary for testing purposes. TODO: allow ssh on docker network arklin2 only later
+      # SSH port temporary for testing purposes!
       - "2222:22"
-      # port ranges for 24 servers (corresponds to 156 GB RAM, as suggested 6.5 GB RAM per server, when all servers running at the same time ofc.)
-      # used ports must be opened/forwarded in firewall/router, except RCON (RCON ist optional). but only the used ports, not the whole ranges, if running less that 24 servers
+      # port ranges for 24 servers...
       # ARK game client connection and raw port pairs (7777+7778 up to 7823+7824)
       - "7777-7824:7777-7824/udp"
-      # Steam's server-list port (27017 conflicts with MongoDB default port, you should not open MongoDB in your firewall to the outer world anyway, so no issue)
+      # Steam's server-list port (we can ignorethe conflict on port 27017 with mongodb default, since we do not open mongodb to the outside world or to the host anyway!)
       - "27015-27038:27015-27038/udp"
       # RCON management port
       - "32330-32353:32330-32353/tcp"
+    # temporary fix for steamcmd dns issues, until fixed by akamai/valve
     extra_hosts:
-      # temporary fix steamcmd can not resolve download servers
       - "media.steampowered.com:23.10.249.160"
       - "client-download.steampowered.com:23.10.249.160"
     networks:
       - arklin2_network
-
-  # This container is for debugging purposes only, DO NOT forward port 8081 in your firewall!
-  mongoexpress:
-    container_name: arklin2-mongoexpress
-    image: mongo-express
-    hostname: arklin2-mongoexpress
+  
+  # This container is for debugging purposes only!
+  mongo-express:
+    user: "1000:1000"
+    container_name: mongo-express
+    image: mongo-express:latest
     depends_on:
       - mongodb
     environment:
-      - ME_CONFIG_MONGODB_URL=mongodb://kadmin:arklin2@arklin2-mongodb:27017
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=kadmin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=arklin2
+      - ME_CONFIG_MONGODB_SERVER=arklin2-mongodb
+      #basic auth
     ports:
       - "8081:8081"
+    networks:
+      - arklin2_network
+
+  mongodb:
+    user: "1000:1000"
+    container_name: arklin2-mongodb
+    image: mongo:latest
+    volumes:
+      - '../mount/mongodb:/data/db'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=kadmin
+      - MONGO_INITDB_ROOT_PASSWORD=arklin2
+      - MONGO_INITDB_DATABASE=arklin2db
     networks:
       - arklin2_network
 

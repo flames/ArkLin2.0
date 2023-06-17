@@ -35,7 +35,7 @@ export const publicCreateAccount =
 				} ) ) {
 					const userDocument = new MongoAccounts();
 
-					userDocument.permissions = token.asSuperAdmin ? [ EPerm.Super ] : [];
+					userDocument.permissions = token.asSuperAdmin ? [ "Super" ] : [];
 					userDocument.username = username;
 					userDocument.mail = email;
 					userDocument.setPassword( password );

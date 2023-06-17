@@ -52,7 +52,8 @@ mongoose
 		`mongodb://${ process.env.MONGODB_HOST }:${ process.env.MONGODB_PORT }`,
 		{
 			user: process.env.MONGODB_USER,
-			pass: process.env.MONGODB_PASSWD
+			pass: process.env.MONGODB_PASSWD,
+			dbName: process.env.MONGODB_DATABASE
 		}
 	)
 	.then( async() => {
